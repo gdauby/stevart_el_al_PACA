@@ -1,0 +1,38 @@
+
+---
+title: "Habits"
+author: Gilles Dauby
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: md_document
+---
+
+
+
+
+# Load packages (to install if needed)
+
+```{r, include=TRUE, echo=TRUE, message=F, warning=F}
+library(tidyverse)
+library(sf)
+library(raster)
+library(ConR)
+library(broom)
+library(rredlist)
+```
+
+# Load functions specific to these analyses
+
+
+# load dataset
+
+```{r, include=TRUE, echo=TRUE, message=F, warning=F}
+dataset <- read_csv("dataset_rainbio_used.csv")
+```
+
+
+```{r, include=TRUE, echo=FALSE, message=F, warning=F}
+dataset
+```
+
+
+

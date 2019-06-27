@@ -3,9 +3,9 @@ presented in the manuscript entitled **A third of the tropical African
 flora is potentially threatened with extinction** currently under
 peer-review.
 
-Load packages (to install if needed)
-====================================
+### Load packages (to be installed if needed)
 
+    library(plyr)
     library(tidyverse)
     library(sf)
     library(raster)
@@ -16,11 +16,9 @@ Load packages (to install if needed)
     library(doParallel)
     library(maps)
 
-Load functions specific to these analyses
-=========================================
+### Load functions specific to these analyses
 
-load dataset
-============
+### load dataset
 
     dataset <- read_csv("data/dataset_rainbio_used.csv")
 
@@ -90,11 +88,26 @@ list of Continent where the species is recorded on gbif.
     ## 10 Eremospatha wendlandiana             37           11 AFRICA             
     ## # ... with 25,212 more rows
 
-load SIG dataset
-================
+### load SIG dataset
 
-Preliminary Automated Conservation Assessment following Criterion B
--------------------------------------------------------------------
+    ## protected areas network
+    protected_areas_network <- sf::read_sf("data/NationalParks_filtered_corrected.shp")
+    ## mineral deposits plus a buffer of 10 km around each point
+    mineral_deposits <- sf::read_sf("data/poly_mineral_deposit.shp")
+    raster_mayaux <- raster("data/sum.rasters.human.impacted.tif")
+
+    ### getting a nice and updated world map
+    world <- maps::map("world", fill=TRUE, plot=FALSE)
+    IDs <- sapply(strsplit(world$names, ":"), function(x) x[1])
+    world <- maptools::map2SpatialPolygons(world, IDs=IDs, proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+    suppressWarnings(world_map <- broom::tidy(world))
+    world_id <- tibble(id_nbe=1:nrow(distinct(world_map, id)), id=pull(distinct(world_map, id)))
+
+    world_map <- as(world, "sf")
+    world_map <- world_map %>% 
+      add_column(id_nbe=world_id$id_nbe, id=world_id$id)
+
+### Preliminary Automated Conservation Assessment following Criterion B
 
     protected_areas_network_sp <- 
       as(protected_areas_network, "Spatial")
@@ -119,3 +132,20 @@ Preliminary Automated Conservation Assessment following Criterion B
     ## # ... with 25,212 more rows, and 5 more variables:
     ## #   Category_CriteriaB <chr>, Category_code <chr>,
     ## #   Ratio_occ_within_PA <dbl>, Category_AOO <chr>, Category_EOO <chr>
+
+    ## # A tibble: 25,222 x 11
+    ##    tax_sp_level     N N_human_impacted N_mines N_impacted_total AOO_all
+    ##    <chr>        <dbl>            <dbl>   <dbl>            <dbl>   <dbl>
+    ##  1 Aaronsohnia~     1                0       0                0       4
+    ##  2 Abelmoschus~     9                8       0                8      20
+    ##  3 Abildgaardi~     1                1       0                1       4
+    ##  4 Abildgaardi~    14                3       0                2      52
+    ##  5 Abrus canes~    87               35       8               23     296
+    ##  6 Abrus fruti~   198               56       6               53     716
+    ##  7 Abrus gawen~     2                0       0                0       8
+    ##  8 Abrus preca~   154               39       3               34     536
+    ##  9 Abrus schim~     2                0       1                1       8
+    ## 10 Abutilon an~     5                0       0                0      20
+    ## # ... with 25,212 more rows, and 5 more variables: AOO_left <dbl>,
+    ## #   nbe_occ_protected_area <dbl>, AOO_without_impact <dbl>,
+    ## #   AOO_decline <dbl>, Category_code_CA <chr>

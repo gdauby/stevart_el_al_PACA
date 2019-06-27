@@ -18,6 +18,8 @@ library(raster)
 library(ConR)
 library(broom)
 library(rredlist)
+library(rgbif)
+library(doParallel)
 ```
 
 # Load functions specific to these analyses
@@ -26,13 +28,71 @@ library(rredlist)
 # load dataset
 
 ```{r, include=TRUE, echo=TRUE, message=F, warning=F}
-dataset <- read_csv("dataset_rainbio_used.csv")
+dataset <- read_csv("data/dataset_rainbio_used.csv")
 ```
 
 
-```{r, include=TRUE, echo=FALSE, message=F, warning=F}
+```{r, include=TRUE, echo=TRUE, message=F, warning=F}
 dataset
 ```
 
 
+# extracting data from gbif for all species 
+```{r, include=TRUE, echo=TRUE, message=F, warning=F, eval=F}
+
+
+species_list <-
+  dataset %>%
+  distinct(tax_sp_level)
+
+list_data <- as.list(pull(species_list))
+
+
+#### Searching for gbif occurrences for all species, takes around 5 hours in parallel on 4 cores.
+doParallel::registerDoParallel(4) ## define here the number of core on which you want to run the search
+
+system.time(results <-
+  plyr::llply(list_data, .fun=function(x) {
+    # source("functions_criteria_A.R")
+    source("gbif_search_filtered_function.R")
+  
+    gbif_search_filtered(taxa = x)
+  }
+    , .progress = "text", .parallel=T, .paropts=list(.packages=c('rgbif','raster','tidyverse', 'ConR', 'sf'))))
+
+
+doParallel::stopImplicitCluster()
+
+gbif_data <- bind_rows(results)
+
+# write_csv(gbif_data, "gbif.searched.all.taxa.csv")
+
+```
+
+```{r, include=F, echo=F, message=F, warning=F}
+gbif_data <- read_csv("data/gbif.searched.all.taxa.csv")
+```
+
+
+This table provide for each species the total number of occurence in gbif, the total number of occupied cells in 10 km cell size grid and the list of Continent where the species is recorded on gbif.
+
+```{r, include=T, echo=F, message=F, warning=F}
+gbif_data
+```
+
+
+```{r, include=T, echo=F, message=F, warning=F}
+protected_areas_network <- sf::read_sf("data/NationalParks_filtered_corrected.shp")
+mineral_deposits <- sf::read_sf("data/poly_mineral_deposit.shp")
+```
+
+
+```{r, include=T, echo=F, message=F, warning=F}
+# plot(protected_areas_network$geometry)
+mapview::mapview(protected_areas_network$geometry)
+```
+
+```{r, include=T, echo=F, message=F, warning=F}
+plot(mineral_deposits$geometry)
+```
 

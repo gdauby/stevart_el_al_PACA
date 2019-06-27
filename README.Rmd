@@ -41,7 +41,7 @@ dataset
 ```
 
 
-# extracting data from gbif for all species 
+### extracting data from gbif for all species 
 ```{r, include=TRUE, echo=TRUE, message=F, warning=F, eval=F}
 
 
@@ -129,6 +129,9 @@ criterion_b <- read_csv("data/dataset_Criterion_B.csv")
 criterion_b
 ```
 
+
+
+### Preliminary Automated Conservation Assessment following Criterion A
 
 
 ```{r CriterionA-Analysis, eval=F, echo=FALSE, warning=F, message=F}

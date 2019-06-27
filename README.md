@@ -40,8 +40,7 @@ peer-review.
     ## # ... with 590,231 more rows, and 4 more variables: a_cultivated <lgl>,
     ## #   a_habit <chr>, ddlat <dbl>, ddlon <dbl>
 
-extracting data from gbif for all species
-=========================================
+### extracting data from gbif for all species
 
     species_list <-
       dataset %>%
@@ -132,6 +131,8 @@ list of Continent where the species is recorded on gbif.
     ## # ... with 25,212 more rows, and 5 more variables:
     ## #   Category_CriteriaB <chr>, Category_code <chr>,
     ## #   Ratio_occ_within_PA <dbl>, Category_AOO <chr>, Category_EOO <chr>
+
+### Preliminary Automated Conservation Assessment following Criterion A
 
     ## # A tibble: 25,222 x 11
     ##    tax_sp_level     N N_human_impacted N_mines N_impacted_total AOO_all

@@ -22,6 +22,7 @@ library(broom)
 library(rredlist)
 library(rgbif)
 library(doParallel)
+library(maps)
 ```
 
 # Load functions specific to these analyses
@@ -82,14 +83,48 @@ This table provide for each species the total number of occurence in gbif, the t
 gbif_data
 ```
 
-
+# load SIG dataset
 ```{r, include=T, echo=F, message=F, warning=F}
 ## protected areas network
 protected_areas_network <- sf::read_sf("data/NationalParks_filtered_corrected.shp")
 ## mineral deposits plus a buffer of 10 km around each point
 mineral_deposits <- sf::read_sf("data/poly_mineral_deposit.shp")
 raster_mayaux <- raster("data/sum.rasters.human.impacted.tif")
+
+### getting a nice and updated world map
+world <- maps::map("world", fill=TRUE, plot=FALSE)
+IDs <- sapply(strsplit(world$names, ":"), function(x) x[1])
+world <- maptools::map2SpatialPolygons(world, IDs=IDs, proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+suppressWarnings(world_map <- broom::tidy(world))
+world_id <- tibble(id_nbe=1:nrow(distinct(world_map, id)), id=pull(distinct(world_map, id)))
+
+world_map <- as(world, "sf")
+world_map <- world_map %>% 
+  add_column(id_nbe=world_id$id_nbe, id=world_id$id)
 ```
 
 
+
+## Preliminary Automated Conservation Assessment following Criterion B
+
+```{r CriterionB-Analysis, eval=F, echo=T, warning=F, message=F}
+
+protected_areas_network_sp <- 
+  as(protected_areas_network, "Spatial")
+
+criterion_b <-
+  IUCN.eval(dplyr::select(dataset, ddlat, ddlon, tax_sp_level)[1:1000,], 
+            protec.areas = protected_areas_network_sp, DrawMap = F, SubPop = F, file_name = "dataset_criterion_B", write_file_option = "csv", parallel = T, NbeCores = 4)
+
+
+```
+
+```{r, include=F, echo=F, message=F, warning=F}
+criterion_b <- read_csv("data/dataset_Criterion_B.csv")
+```
+
+
+```{r, include=T, echo=F, message=F, warning=F}
+criterion_b
+```
 

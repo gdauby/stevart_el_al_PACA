@@ -14,6 +14,7 @@ Load packages (to install if needed)
     library(rredlist)
     library(rgbif)
     library(doParallel)
+    library(maps)
 
 Load functions specific to these analyses
 =========================================
@@ -88,3 +89,33 @@ list of Continent where the species is recorded on gbif.
     ##  9 Eremospatha tessmanniana              0           NA <NA>               
     ## 10 Eremospatha wendlandiana             37           11 AFRICA             
     ## # ... with 25,212 more rows
+
+load SIG dataset
+================
+
+Preliminary Automated Conservation Assessment following Criterion B
+-------------------------------------------------------------------
+
+    protected_areas_network_sp <- 
+      as(protected_areas_network, "Spatial")
+
+    criterion_b <-
+      IUCN.eval(dplyr::select(dataset, ddlat, ddlon, tax_sp_level)[1:1000,], 
+                protec.areas = protected_areas_network_sp, DrawMap = F, SubPop = F, file_name = "dataset_criterion_B", write_file_option = "csv", parallel = T, NbeCores = 4)
+
+    ## # A tibble: 25,222 x 12
+    ##    X1        EOO   AOO Nbe_unique_occ. Nbe_subPop Nbe_loc Nbe_loc_PA
+    ##    <chr>   <dbl> <dbl>           <dbl> <lgl>        <dbl>      <dbl>
+    ##  1 Aaro~ NA          4               1 NA               1          0
+    ##  2 Abel~  4.19e4    20               5 NA               3          0
+    ##  3 Abil~ NA          4               1 NA               1          0
+    ##  4 Abil~  5.24e6    56              14 NA              13          1
+    ##  5 Abru~  7.73e6   296              74 NA              70         10
+    ##  6 Abru~  1.91e7   720             193 NA             171         22
+    ##  7 Abru~ NA          8               2 NA               2          0
+    ##  8 Abru~  1.40e7   536             137 NA             127         14
+    ##  9 Abru~ NA          8               2 NA               2          0
+    ## 10 Abut~  3.48e5    20               5 NA               5          0
+    ## # ... with 25,212 more rows, and 5 more variables:
+    ## #   Category_CriteriaB <chr>, Category_code <chr>,
+    ## #   Ratio_occ_within_PA <dbl>, Category_AOO <chr>, Category_EOO <chr>

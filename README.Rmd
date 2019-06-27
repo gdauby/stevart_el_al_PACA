@@ -26,8 +26,6 @@ library(doParallel)
 library(maps)
 ```
 
-### Load functions specific to these analyses
-
 
 ### load dataset
 

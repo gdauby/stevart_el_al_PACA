@@ -16,8 +16,6 @@ peer-review.
     library(doParallel)
     library(maps)
 
-### Load functions specific to these analyses
-
 ### load dataset
 
     dataset <- read_csv("data/dataset_rainbio_used.csv")

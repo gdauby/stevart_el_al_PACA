@@ -7,6 +7,8 @@ output: md_document
 ---
 
 
+This document document R scripts and functions used for the analysis presented in the manuscript entitled __A third of the tropical African flora is potentially threatened with extinction__ currently under peer-review.
+
 
 
 # Load packages (to install if needed)
@@ -82,17 +84,12 @@ gbif_data
 
 
 ```{r, include=T, echo=F, message=F, warning=F}
+## protected areas network
 protected_areas_network <- sf::read_sf("data/NationalParks_filtered_corrected.shp")
+## mineral deposits plus a buffer of 10 km around each point
 mineral_deposits <- sf::read_sf("data/poly_mineral_deposit.shp")
+raster_mayaux <- raster("data/sum.rasters.human.impacted.tif")
 ```
 
 
-```{r, include=T, echo=F, message=F, warning=F}
-# plot(protected_areas_network$geometry)
-mapview::mapview(protected_areas_network$geometry)
-```
-
-```{r, include=T, echo=F, message=F, warning=F}
-plot(mineral_deposits$geometry)
-```
 

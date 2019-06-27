@@ -1,3 +1,8 @@
+This document document R scripts and functions used for the analysis
+presented in the manuscript entitled **A third of the tropical African
+flora is potentially threatened with extinction** currently under
+peer-review.
+
 Load packages (to install if needed)
 ====================================
 
@@ -83,5 +88,3 @@ list of Continent where the species is recorded on gbif.
     ##  9 Eremospatha tessmanniana              0           NA <NA>               
     ## 10 Eremospatha wendlandiana             37           11 AFRICA             
     ## # ... with 25,212 more rows
-
-![](README_files/figure-markdown_strict/unnamed-chunk-9-1.png)

@@ -132,6 +132,41 @@ list of Continent where the species is recorded on gbif.
 
 ### Preliminary Automated Conservation Assessment following Criterion A
 
+    source("criteria_A_function.R") 
+
+
+    list_data <- split(dplyr::select(dataset, ddlat, ddlon, tax_sp_level), 
+                       f =dataset$tax_sp_level)
+
+    ### Take about 1 hour
+
+    doParallel::registerDoParallel(4)
+
+    system.time(Results <-
+      plyr::llply(list_data, .fun=function(x) {
+
+        source("criteria_A_function.R")
+        sum.rasters.human.impacted <- raster("data/sum.rasters.human.impacted.tif")
+        mineral_deposits <- sf::read_sf("data/poly_mineral_deposit.shp")
+        protected_areas_network <- sf::read_sf("data/NationalParks_filtered_corrected.shp")
+        
+        IUCN_eval_CA(data = x, rasters = sum.rasters.human.impacted, mineral = mineral_deposits, protected_areas = protected_areas_network)
+        
+      }
+        , .progress = "text", .parallel=T, .paropts=list(.packages=c('raster','tidyverse', 'sf'))))
+
+    criterion_a<- bind_rows(Results)
+
+    criterion_a <-
+      criterion_a %>%
+      mutate(AOO_without_impact=AOO_all-AOO_left) %>%
+      mutate(AOO_decline=(AOO_all-AOO_without_impact)/AOO_all*100)
+
+    criterion_a <- criterion_a %>%
+      add_column(Category_code_CA=plyr::aaply(criterion_a$AOO_decline, 1, Cat_Crition_A))
+
+    write_csv(criterion_a, "dataset_Criterion_A.csv")
+
     ## # A tibble: 25,222 x 11
     ##    tax_sp_level     N N_human_impacted N_mines N_impacted_total AOO_all
     ##    <chr>        <dbl>            <dbl>   <dbl>            <dbl>   <dbl>

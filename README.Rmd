@@ -132,7 +132,7 @@ criterion_b
 ### Preliminary Automated Conservation Assessment following Criterion A
 
 
-```{r CriterionA-Analysis, eval=F, echo=FALSE, warning=F, message=F}
+```{r CriterionA-Analysis, eval=F, echo=TRUE, warning=F, message=F}
 
 source("criteria_A_function.R") 
 

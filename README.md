@@ -183,3 +183,55 @@ list of Continent where the species is recorded on gbif.
     ## # ... with 25,212 more rows, and 5 more variables: AOO_left <dbl>,
     ## #   nbe_occ_protected_area <dbl>, AOO_without_impact <dbl>,
     ## #   AOO_decline <dbl>, Category_code_CA <chr>
+
+### Obtain published full IUCN assessment from the Red List
+
+You will need a token from the Red List to use the API. Request a token
+[HERE](http://apiv3.iucnredlist.org/api/v3/token)
+
+    species_list <- distinct(dataset, tax_sp_level)
+
+    # i <- 1
+    all.cons.status <- list()
+
+    for (i in 1:nrow(species_list)) { # 
+      cat(i, " ")
+    res_iucn <-
+      rl_search(name = species_list$tax_sp_level[i], parse =F, 
+                key = "YourTokenID") ### replace your own Token here
+
+      if(length(res_iucn$result)>0) {
+        
+        full <- lapply(res_iucn$result[[1]], function(x) ifelse(is.null(x), NA, x))
+        full$tax_sp_level <- species_list$tax_sp_level[i]
+          
+        all.cons.status[[length(all.cons.status)+1]] <- do.call("cbind", full) %>%
+          as_tibble()
+        
+        # print(all.cons.status[[length(all.cons.status)]])
+      }
+    }
+
+    IUCN.cons.status.tb <- bind_rows(all.cons.status)
+
+    ## # A tibble: 2,856 x 29
+    ##    taxonid scientific_name kingdom phylum class order family genus
+    ##      <dbl> <chr>           <chr>   <chr>  <chr> <chr> <chr>  <chr>
+    ##  1  9.53e7 Eremospatha cu~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  2  9.53e7 Eremospatha dr~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  3  9.53e7 Eremospatha ha~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  4  1.96e5 Borassus aethi~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Bora~
+    ##  5  4.44e7 Eremospatha ho~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  6  9.53e7 Eremospatha la~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  7  9.53e7 Eremospatha ma~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  8  9.53e7 Eremospatha qu~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ##  9  9.53e7 Eremospatha te~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ## 10  9.53e7 Eremospatha we~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
+    ## # ... with 2,846 more rows, and 21 more variables: main_common_name <chr>,
+    ## #   authority <chr>, published_year <dbl>, category <chr>, criteria <chr>,
+    ## #   marine_system <lgl>, freshwater_system <lgl>,
+    ## #   terrestrial_system <lgl>, assessor <chr>, reviewer <chr>,
+    ## #   aoo_km2 <chr>, eoo_km2 <chr>, elevation_upper <dbl>,
+    ## #   elevation_lower <dbl>, depth_upper <dbl>, depth_lower <lgl>,
+    ## #   errata_flag <lgl>, errata_reason <chr>, amended_flag <lgl>,
+    ## #   amended_reason <chr>, tax_sp_level <chr>

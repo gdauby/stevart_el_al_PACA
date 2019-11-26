@@ -183,5 +183,43 @@ criterion_a <- read_csv("data/dataset_Criterion_A.csv")
 criterion_a
 ```
 
+### Obtain published full IUCN assessment from the Red List
+
+You will need a token from the Red List to use the API. Request a token [HERE](http://apiv3.iucnredlist.org/api/v3/token)
 
 
+```{r, eval=F, echo=TRUE, warning=F, message=F}
+
+species_list <- distinct(dataset, tax_sp_level)
+
+# i <- 1
+all.cons.status <- list()
+
+for (i in 1:nrow(species_list)) { # 
+  cat(i, " ")
+res_iucn <-
+  rl_search(name = species_list$tax_sp_level[i], parse =F, 
+            key = "YourTokenID") ### replace your own Token here
+
+  if(length(res_iucn$result)>0) {
+    
+    full <- lapply(res_iucn$result[[1]], function(x) ifelse(is.null(x), NA, x))
+    full$tax_sp_level <- species_list$tax_sp_level[i]
+      
+    all.cons.status[[length(all.cons.status)+1]] <- do.call("cbind", full) %>%
+      as_tibble()
+    
+    # print(all.cons.status[[length(all.cons.status)]])
+  }
+}
+
+IUCN.cons.status.tb <- bind_rows(all.cons.status)
+```
+
+```{r, include=F, echo=F, message=F, warning=F}
+IUCN.cons.status.tb <- read_csv("data/IUCN.cons.status.tb.final.csv")
+```
+
+```{r, include=T, echo=F, message=F, warning=F}
+IUCN.cons.status.tb
+```

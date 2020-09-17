@@ -1,7 +1,6 @@
 This document document R scripts and functions used for the analysis
 presented in the manuscript entitled **A third of the tropical African
-flora is potentially threatened with extinction** currently under
-peer-review.
+flora is potentially threatened with extinction**
 
 ### Load packages (to be installed if needed)
 

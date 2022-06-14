@@ -7,14 +7,13 @@ output: md_document
 ---
 
 
-This document document R scripts and functions used for the analysis presented in the manuscript entitled __A third of the tropical African flora is potentially threatened with extinction__ currently under peer-review.
+This document document R scripts and functions used for the analysis presented in the manuscript entitled __A third of the tropical African flora is potentially threatened with extinction__ published in Sciences Advances (Stévart _et al._ 2018)
 
 
 
 ### Load packages (to be installed if needed)
 
 ```{r, include=TRUE, echo=TRUE, message=F, warning=F}
-library(plyr)
 library(tidyverse)
 library(sf)
 library(raster)
@@ -24,6 +23,7 @@ library(rredlist)
 library(rgbif)
 library(doParallel)
 library(maps)
+library(tmap)
 ```
 
 
@@ -198,7 +198,7 @@ all.cons.status <- list()
 for (i in 1:nrow(species_list)) { # 
   cat(i, " ")
 res_iucn <-
-  rl_search(name = species_list$tax_sp_level[i], parse =F, 
+  rredlist::rl_search(name = species_list$tax_sp_level[i], parse =F, 
             key = "YourTokenID") ### replace your own Token here
 
   if(length(res_iucn$result)>0) {
@@ -223,3 +223,163 @@ IUCN.cons.status.tb <- read_csv("data/IUCN.cons.status.tb.final.csv")
 ```{r, include=T, echo=F, message=F, warning=F}
 IUCN.cons.status.tb
 ```
+
+
+
+
+```{r eval=F, echo=F}
+### Intersecting potentially/likely threatened species with phytographical regions
+dataset <- read_csv("data/dataset_rainbio_used.csv")
+dataset_ca <- read_csv("data/dataset_Criterion_A.csv")
+dataset_cb <- read_csv("data/dataset_Criterion_B.csv")
+
+dataset_ca <- dataset_ca %>%
+  mutate(code_ca = dplyr::case_when(
+    Category_code_CA == "LC or NT" ~ 4,
+    Category_code_CA == "CR" ~ 1,
+    Category_code_CA == "VU" ~ 3,
+    Category_code_CA == "EN" ~ 2
+  ))
+
+dataset_cb <- dataset_cb %>%
+  mutate(code_cb = dplyr::case_when(
+    Category_CriteriaB == "LC or NT" ~ 4,
+    Category_CriteriaB == "CR" ~ 1,
+    Category_CriteriaB == "VU" ~ 3,
+    Category_CriteriaB == "EN" ~ 2
+  ))
+
+
+phyto_regions <- st_read("data/RAINBIO_phytogeography.shp")
+
+dataset <- dataset %>%
+  left_join(dataset_ca %>%
+              dplyr::select(tax_sp_level, code_ca)) %>%
+  left_join(dataset_cb %>%
+              dplyr::select(tax_sp_level, code_cb))
+
+dataset_sf <- st_as_sf(dataset, coords = c("ddlon", "ddlat"))
+st_crs(dataset_sf) <- 4326
+
+dataset_sf_inter <- st_intersection(dataset_sf, phyto_regions)
+
+dataset_phytoreg <- 
+  dataset_sf_inter %>%
+  st_set_geometry(NULL) %>% 
+  mutate(code_c_min = pmin(code_ca, code_cb))
+
+nbr_species_phytoreg <- 
+  dataset_phytoreg %>%
+  distinct(Bioreg_ID, tax_sp_level, code_c_min) %>%
+  pivot_wider(
+    names_from = c("code_c_min"),
+    values_from = "tax_sp_level",
+    values_fn = ~ length(unique(.x)),
+    names_prefix = "status_"
+  )
+
+nbr_species_phytoreg <- 
+  nbr_species_phytoreg %>% 
+  mutate(nbr_sp = status_1 + status_2 + status_3 + status_4) %>% 
+  mutate(prop_threat = (status_1 + status_2 + status_3)/nbr_sp*100,
+         prop_lik_threat = (status_1 + status_2)/nbr_sp*100)
+
+dataset_phytoreg <- 
+  dataset_sf_inter %>%
+  st_set_geometry(NULL) %>% 
+  mutate(code_c_min = pmin(code_ca, code_cb))
+
+nbr_species_phytoreg_cb <- 
+  dataset_phytoreg %>%
+  distinct(Bioreg_ID, tax_sp_level, code_cb) %>%
+  pivot_wider(
+    names_from = c("code_cb"),
+    values_from = "tax_sp_level",
+    values_fn = ~ length(unique(.x)),
+    names_prefix = "status_"
+  )
+
+nbr_species_phytoreg_cb <- 
+  nbr_species_phytoreg_cb %>% 
+  mutate(nbr_sp = status_1 + status_2 + status_3 + status_4) %>% 
+  mutate(prop_threat_cb = (status_1 + status_2 + status_3)/nbr_sp*100,
+         prop_lik_threat_cb = (status_1 + status_2)/nbr_sp*100)
+
+nbr_species_phytoreg_ca <- 
+  dataset_phytoreg %>%
+  distinct(Bioreg_ID, tax_sp_level, code_ca) %>%
+  pivot_wider(
+    names_from = c("code_ca"),
+    values_from = "tax_sp_level",
+    values_fn = ~ length(unique(.x)),
+    names_prefix = "status_"
+  )
+
+nbr_species_phytoreg_ca <- 
+  nbr_species_phytoreg_ca %>% 
+  mutate(nbr_sp = status_1 + status_2 + status_3 + status_4) %>% 
+  mutate(prop_threat_ca = (status_1 + status_2 + status_3)/nbr_sp*100,
+         prop_lik_threat_ca = (status_1 + status_2)/nbr_sp*100)
+
+phyto_regions <- phyto_regions %>% 
+  left_join(nbr_species_phytoreg %>% dplyr::select(Bioreg_ID, prop_threat, prop_lik_threat)) %>% 
+  left_join(nbr_species_phytoreg_cb %>% dplyr::select(Bioreg_ID, prop_threat_cb, prop_lik_threat_cb)) %>% 
+  left_join(nbr_species_phytoreg_ca %>% dplyr::select(Bioreg_ID, prop_threat_ca, prop_lik_threat_ca))
+
+st_tr_map <- tm_shape(phyto_regions) + 
+  tm_rgb() +
+  tm_shape(all_waypoints_tr_sf) +
+  tm_dots(size = 1, alpha = 0.6, shape = 19, col = "blue") + 
+  tm_compass(type = "8star", position = c("left", "top")) +
+  tm_scale_bar(breaks = c(0, 5, 10, 15), text.size = 1, position = "RIGHT") + 
+  tm_layout(frame = T)
+
+data("World")
+africa <- 
+  World %>% 
+  filter(continent == "Africa", name != "Madagascar")
+
+cb_prop <- tm_shape(africa) +
+  tm_polygons("continent",
+              legend.show = F,
+              palette = "grey") +
+  tm_shape(phyto_regions %>% filter(Bioreg_ID != "T")) +
+  tm_polygons("prop_threat_cb",
+              title = "Proportion \nof threatened \nspecies following \ncriterion B (%)") +
+  tm_layout(frame = T) +
+  tm_legend(legend.title.size = 2.,
+            legend.text.size = 1.5)
+
+tmap_save(cb_prop, "cb_prop_phytoreg.png")
+
+ca_prop <- tm_shape(africa) +
+  tm_polygons("continent",
+              legend.show = F,
+              palette = "grey") +
+  tm_shape(phyto_regions %>% filter(Bioreg_ID != "T", !is.na(prop_threat_ca))) +
+  tm_polygons("prop_threat_ca",
+              title = "Proportion \nof threatened \nspecies following \ncriterion A (%)") +
+  tm_layout(frame = T) +
+  tm_legend(legend.title.size = 2.,
+            legend.text.size = 1.5)
+
+tmap_save(ca_prop, "ca_prop_phytoreg.png")
+
+cb_prop <- tm_shape(africa) +
+  tm_polygons("continent",
+              legend.show = F,
+              palette = "grey") +
+  tm_shape(phyto_regions %>% filter(Bioreg_ID != "T")) +
+  tm_polygons("prop_threat",
+              title = "Proportion \nof threatened \nspecies (%)") +
+  tm_layout(frame = T) +
+  tm_legend(legend.title.size = 2.,
+            legend.text.size = 1.5)
+
+tmap_save(cb_prop, "prop_phytoreg.png")
+
+
+```
+
+
+

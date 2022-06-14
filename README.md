@@ -1,11 +1,10 @@
 This document document R scripts and functions used for the analysis
 presented in the manuscript entitled **A third of the tropical African
-flora is potentially threatened with extinction** currently under
-peer-review.
+flora is potentially threatened with extinction** published in Sciences
+Advances (Stévart *et al.* 2018)
 
 ### Load packages (to be installed if needed)
 
-    library(plyr)
     library(tidyverse)
     library(sf)
     library(raster)
@@ -15,6 +14,7 @@ peer-review.
     library(rgbif)
     library(doParallel)
     library(maps)
+    library(tmap)
 
 ### load dataset
 
@@ -22,20 +22,20 @@ peer-review.
 
     dataset
 
-    ## # A tibble: 590,241 x 12
-    ##     idrb country  coly  colm kind_col tax_fam tax_sp_level tax_infra_sp_le~
-    ##    <dbl> <chr>   <dbl> <dbl> <chr>    <chr>   <chr>        <chr>           
-    ##  1  6881 Gabon    1992     8 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  2  5528 Camero~  1995    10 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  3  9178 Equato~  1998     3 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  4  7007 Gabon    2003    11 Sili     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  5  6021 Gabon    1994    10 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  6  7008 Gabon    2005     4 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  7  9882 Zambia   1969     5 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  8  5465 Angola   1937    NA herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ##  9  7522 Congo ~  1987     2 herb     Arecac~ Eremospatha~ Eremospatha cus~
-    ## 10  8383 Sierra~  1952    NA herb     Arecac~ Eremospatha~ Eremospatha dra~
-    ## # ... with 590,231 more rows, and 4 more variables: a_cultivated <lgl>,
+    ## # A tibble: 590,241 × 12
+    ##     idrb country       coly  colm kind_col tax_fam tax_sp_level tax_infra_sp_le…
+    ##    <dbl> <chr>        <dbl> <dbl> <chr>    <chr>   <chr>        <chr>           
+    ##  1  6881 Gabon         1992     8 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  2  5528 Cameroon      1995    10 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  3  9178 Equatorial …  1998     3 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  4  7007 Gabon         2003    11 Sili     Arecac… Eremospatha… Eremospatha cus…
+    ##  5  6021 Gabon         1994    10 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  6  7008 Gabon         2005     4 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  7  9882 Zambia        1969     5 herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  8  5465 Angola        1937    NA herb     Arecac… Eremospatha… Eremospatha cus…
+    ##  9  7522 Congo - Kin…  1987     2 herb     Arecac… Eremospatha… Eremospatha cus…
+    ## 10  8383 Sierra Leone  1952    NA herb     Arecac… Eremospatha… Eremospatha dra…
+    ## # … with 590,231 more rows, and 4 more variables: a_cultivated <lgl>,
     ## #   a_habit <chr>, ddlat <dbl>, ddlon <dbl>
 
 ### extracting data from gbif for all species
@@ -70,20 +70,20 @@ This table provide for each species the total number of occurence in
 gbif, the total number of occupied cells in 10 km cell size grid and the
 list of Continent where the species is recorded on gbif.
 
-    ## # A tibble: 25,222 x 4
-    ##    tax_sp_level               nbe_occ_gbif nbe_loc_gbif list_continents_gb~
-    ##    <chr>                             <dbl>        <dbl> <chr>              
-    ##  1 Eremospatha cuspidata                41           12 AFRICA             
-    ##  2 Eremospatha dransfieldii              5            4 AFRICA             
-    ##  3 Eremospatha haullevilleana           48           25 AFRICA             
-    ##  4 Borassus aethiopum                   13            6 AFRICA             
-    ##  5 Eremospatha hookeri                  11            6 AFRICA             
-    ##  6 Eremospatha laurentii                30           11 AFRICA             
-    ##  7 Eremospatha macrocarpa                5           NA <NA>               
-    ##  8 Eremospatha quinquecostul~            7            4 AFRICA             
-    ##  9 Eremospatha tessmanniana              0           NA <NA>               
-    ## 10 Eremospatha wendlandiana             37           11 AFRICA             
-    ## # ... with 25,212 more rows
+    ## # A tibble: 25,222 × 4
+    ##    tax_sp_level                 nbe_occ_gbif nbe_loc_gbif list_continents_gbif
+    ##    <chr>                               <dbl>        <dbl> <chr>               
+    ##  1 Eremospatha cuspidata                  41           12 AFRICA              
+    ##  2 Eremospatha dransfieldii                5            4 AFRICA              
+    ##  3 Eremospatha haullevilleana             48           25 AFRICA              
+    ##  4 Borassus aethiopum                     13            6 AFRICA              
+    ##  5 Eremospatha hookeri                    11            6 AFRICA              
+    ##  6 Eremospatha laurentii                  30           11 AFRICA              
+    ##  7 Eremospatha macrocarpa                  5           NA <NA>                
+    ##  8 Eremospatha quinquecostulata            7            4 AFRICA              
+    ##  9 Eremospatha tessmanniana                0           NA <NA>                
+    ## 10 Eremospatha wendlandiana               37           11 AFRICA              
+    ## # … with 25,212 more rows
 
 ### load SIG dataset
 
@@ -113,22 +113,22 @@ list of Continent where the species is recorded on gbif.
       IUCN.eval(dplyr::select(dataset, ddlat, ddlon, tax_sp_level)[1:1000,], 
                 protec.areas = protected_areas_network_sp, DrawMap = F, SubPop = F, file_name = "dataset_criterion_B", write_file_option = "csv", parallel = T, NbeCores = 4)
 
-    ## # A tibble: 25,222 x 12
-    ##    X1        EOO   AOO Nbe_unique_occ. Nbe_subPop Nbe_loc Nbe_loc_PA
-    ##    <chr>   <dbl> <dbl>           <dbl> <lgl>        <dbl>      <dbl>
-    ##  1 Aaro~ NA          4               1 NA               1          0
-    ##  2 Abel~  4.19e4    20               5 NA               3          0
-    ##  3 Abil~ NA          4               1 NA               1          0
-    ##  4 Abil~  5.24e6    56              14 NA              13          1
-    ##  5 Abru~  7.73e6   296              74 NA              70         10
-    ##  6 Abru~  1.91e7   720             193 NA             171         22
-    ##  7 Abru~ NA          8               2 NA               2          0
-    ##  8 Abru~  1.40e7   536             137 NA             127         14
-    ##  9 Abru~ NA          8               2 NA               2          0
-    ## 10 Abut~  3.48e5    20               5 NA               5          0
-    ## # ... with 25,212 more rows, and 5 more variables:
-    ## #   Category_CriteriaB <chr>, Category_code <chr>,
-    ## #   Ratio_occ_within_PA <dbl>, Category_AOO <chr>, Category_EOO <chr>
+    ## # A tibble: 25,222 × 12
+    ##    tax_sp_level          EOO   AOO Nbe_unique_occ. Nbe_subPop Nbe_loc Nbe_loc_PA
+    ##    <chr>               <dbl> <dbl>           <dbl> <lgl>        <dbl>      <dbl>
+    ##  1 Aaronsohnia pube… NA          4               1 NA               1          0
+    ##  2 Abelmoschus cail…  4.19e4    20               5 NA               3          0
+    ##  3 Abildgaardia hyg… NA          4               1 NA               1          0
+    ##  4 Abildgaardia tri…  5.24e6    56              14 NA              13          1
+    ##  5 Abrus canescens    7.73e6   296              74 NA              70         10
+    ##  6 Abrus fruticulos…  1.91e7   720             193 NA             171         22
+    ##  7 Abrus gawenensis  NA          8               2 NA               2          0
+    ##  8 Abrus precatorius  1.40e7   536             137 NA             127         14
+    ##  9 Abrus schimperi   NA          8               2 NA               2          0
+    ## 10 Abutilon angloso…  3.48e5    20               5 NA               5          0
+    ## # … with 25,212 more rows, and 5 more variables: Category_CriteriaB <chr>,
+    ## #   Category_code <chr>, Ratio_occ_within_PA <dbl>, Category_AOO <chr>,
+    ## #   Category_EOO <chr>
 
 ### Preliminary Automated Conservation Assessment following Criterion A
 
@@ -167,22 +167,21 @@ list of Continent where the species is recorded on gbif.
 
     write_csv(criterion_a, "dataset_Criterion_A.csv")
 
-    ## # A tibble: 25,222 x 11
-    ##    tax_sp_level     N N_human_impacted N_mines N_impacted_total AOO_all
-    ##    <chr>        <dbl>            <dbl>   <dbl>            <dbl>   <dbl>
-    ##  1 Aaronsohnia~     1                0       0                0       4
-    ##  2 Abelmoschus~     9                8       0                8      20
-    ##  3 Abildgaardi~     1                1       0                1       4
-    ##  4 Abildgaardi~    14                3       0                2      52
-    ##  5 Abrus canes~    87               35       8               23     296
-    ##  6 Abrus fruti~   198               56       6               53     716
-    ##  7 Abrus gawen~     2                0       0                0       8
-    ##  8 Abrus preca~   154               39       3               34     536
-    ##  9 Abrus schim~     2                0       1                1       8
-    ## 10 Abutilon an~     5                0       0                0      20
-    ## # ... with 25,212 more rows, and 5 more variables: AOO_left <dbl>,
-    ## #   nbe_occ_protected_area <dbl>, AOO_without_impact <dbl>,
-    ## #   AOO_decline <dbl>, Category_code_CA <chr>
+    ## # A tibble: 25,222 × 11
+    ##    tax_sp_level     N N_human_impacted N_mines N_impacted_total AOO_all AOO_left
+    ##    <chr>        <dbl>            <dbl>   <dbl>            <dbl>   <dbl>    <dbl>
+    ##  1 Aaronsohnia…     1                0       0                0       4        0
+    ##  2 Abelmoschus…     9                8       0                8      20       16
+    ##  3 Abildgaardi…     1                1       0                1       4        4
+    ##  4 Abildgaardi…    14                3       0                2      52        8
+    ##  5 Abrus canes…    87               35       8               23     296       80
+    ##  6 Abrus fruti…   198               56       6               53     716      188
+    ##  7 Abrus gawen…     2                0       0                0       8        0
+    ##  8 Abrus preca…   154               39       3               34     536      128
+    ##  9 Abrus schim…     2                0       1                1       8        4
+    ## 10 Abutilon an…     5                0       0                0      20        0
+    ## # … with 25,212 more rows, and 4 more variables: nbe_occ_protected_area <dbl>,
+    ## #   AOO_without_impact <dbl>, AOO_decline <dbl>, Category_code_CA <chr>
 
 ### Obtain published full IUCN assessment from the Red List
 
@@ -197,7 +196,7 @@ You will need a token from the Red List to use the API. Request a token
     for (i in 1:nrow(species_list)) { # 
       cat(i, " ")
     res_iucn <-
-      rl_search(name = species_list$tax_sp_level[i], parse =F, 
+      rredlist::rl_search(name = species_list$tax_sp_level[i], parse =F, 
                 key = "YourTokenID") ### replace your own Token here
 
       if(length(res_iucn$result)>0) {
@@ -214,24 +213,23 @@ You will need a token from the Red List to use the API. Request a token
 
     IUCN.cons.status.tb <- bind_rows(all.cons.status)
 
-    ## # A tibble: 2,856 x 29
-    ##    taxonid scientific_name kingdom phylum class order family genus
-    ##      <dbl> <chr>           <chr>   <chr>  <chr> <chr> <chr>  <chr>
-    ##  1  9.53e7 Eremospatha cu~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  2  9.53e7 Eremospatha dr~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  3  9.53e7 Eremospatha ha~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  4  1.96e5 Borassus aethi~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Bora~
-    ##  5  4.44e7 Eremospatha ho~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  6  9.53e7 Eremospatha la~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  7  9.53e7 Eremospatha ma~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  8  9.53e7 Eremospatha qu~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ##  9  9.53e7 Eremospatha te~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ## 10  9.53e7 Eremospatha we~ PLANTAE TRACH~ LILI~ AREC~ ARECA~ Erem~
-    ## # ... with 2,846 more rows, and 21 more variables: main_common_name <chr>,
+    ## # A tibble: 2,856 × 29
+    ##     taxonid scientific_name              kingdom phylum class order family genus
+    ##       <dbl> <chr>                        <chr>   <chr>  <chr> <chr> <chr>  <chr>
+    ##  1 95317171 Eremospatha cuspidata        PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  2 95317299 Eremospatha dransfieldii     PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  3 95317318 Eremospatha haullevilleana   PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  4   195913 Borassus aethiopum           PLANTAE TRACH… LILI… AREC… ARECA… Bora…
+    ##  5 44392184 Eremospatha hookeri          PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  6 95317339 Eremospatha laurentii        PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  7 95317371 Eremospatha macrocarpa       PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  8 95317421 Eremospatha quinquecostulata PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ##  9 95317440 Eremospatha tessmanniana     PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ## 10 95317459 Eremospatha wendlandiana     PLANTAE TRACH… LILI… AREC… ARECA… Erem…
+    ## # … with 2,846 more rows, and 21 more variables: main_common_name <chr>,
     ## #   authority <chr>, published_year <dbl>, category <chr>, criteria <chr>,
-    ## #   marine_system <lgl>, freshwater_system <lgl>,
-    ## #   terrestrial_system <lgl>, assessor <chr>, reviewer <chr>,
-    ## #   aoo_km2 <chr>, eoo_km2 <chr>, elevation_upper <dbl>,
-    ## #   elevation_lower <dbl>, depth_upper <dbl>, depth_lower <lgl>,
-    ## #   errata_flag <lgl>, errata_reason <chr>, amended_flag <lgl>,
-    ## #   amended_reason <chr>, tax_sp_level <chr>
+    ## #   marine_system <lgl>, freshwater_system <lgl>, terrestrial_system <lgl>,
+    ## #   assessor <chr>, reviewer <chr>, aoo_km2 <chr>, eoo_km2 <chr>,
+    ## #   elevation_upper <dbl>, elevation_lower <dbl>, depth_upper <dbl>,
+    ## #   depth_lower <lgl>, errata_flag <lgl>, errata_reason <lgl>,
+    ## #   amended_flag <lgl>, amended_reason <chr>, tax_sp_level <chr>
